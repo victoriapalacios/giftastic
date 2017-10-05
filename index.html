@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang ="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SNL GIFs</title>
+    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script type = "text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+    <!-- <script src="assets/js/main.js"></script> -->
+  </head>
+  <body>
+    <div id="buttons"></div>
+
+    <label for="">Add Button</label><br>
+    <input type="text" id="userSearchItem" placeholder= "SNL Actor">
+    <button id="search">Add</button>
+    <div id="images"></div>
+
+  </body>
+</html>
+
+<script type="text/javascript">
+
+
+$( document ).ready(function() {
+
+  var snlCast = ["Kate McKinnon", "Jimmy Fallon", "Kristen Wiig", "Tina Fey", "Will Ferrell", "Seth Meyers", "Fred Armisen", "Amy Poehler", "Bill Hader", "Andy Samberg", "Vanessa Bayer"]
+
+    // Below code loops through the snlCast so we can create a button for each string.
+    for (i = 0; i < snlCast.length; i++) {
+      var snlButtons = $("<button>");
+      snlButtons.addClass("button-styles button-clicked")
+      snlButtons.attr("data-castbuttons", snlCast[i]);
+      snlButtons.text(snlCast[i]);
+      $("#buttons").append(snlButtons);
+    }
+
+    //Below code is a click event. We capture the users input to store in a button.
+    $("#search").on("click", function(event) {
+
+     var userInput = $("#userSearchItem").val();
+     var newButton = userInput
+     newButton = $("<button>");
+     newButton.addClass("button-styles button-clicked");
+     newButton.attr("data-castbuttons", userInput);
+     newButton.text(userInput);
+     $("#buttons").append(newButton);
+    });
+
+    //Below code is a click event. When a user click on an SNL cast button, we can console log the button contnet. (NEEDS FIXING)
+    $("body").on("click", ".button-clicked", function(event) {
+    var buttonClicked = $(this).attr("data-castbuttons")
+
+
+    // Below is the AJAX crap.
+    var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + buttonClicked + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+    $.ajax({
+      url: queryURL,
+      method: "GET"
+    })
+
+    .done(function(response) {
+      var results = response.data
+      for (var i = 0; i < results.length; i++) {
+
+        //Below is how we call to the API to grab the gif and rating and place them in html elements
+        var gifGallery = $("<div>");
+        var rating = results[i].rating;
+        var p = $("<p class='rating'>").text("Rating: " + rating);
+        var still = (results[i].images.fixed_height_still.url);
+        var animated = (results[i].images.fixed_height.url);
+        var gifImage = $("<img>").attr("src", still);
+        gifImage.attr("data-still", still);
+        gifImage.attr("data-animate", animated);
+        gifImage.attr("data-state", "still");
+        gifImage.addClass("state-change");
+        gifGallery.prepend(gifImage);
+        gifGallery.prepend(p);
+        $("#images").prepend(gifGallery);
+      }
+
+      //Below is how your click to play or pause an image
+      $(".state-change").on("click", function() {
+
+        var state = $(this).attr("data-state");
+        if (state === "still") {
+          $(this).attr("src", $(this).attr("data-animate"));
+          $(this).attr("data-state", "data-animate");
+        } else {
+          $(this).attr("src", $(this).attr("data-still"));
+          $(this).attr("data-state", "data-still");
+        }
+      });
+    });
+  });
+});
+
+</script>
